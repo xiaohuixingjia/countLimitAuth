@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:jee="http://www.springframework.org/schema/jee" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+    http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+    http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.0.xsd
+    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+    http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
+
+	<bean
+		class="org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor" />
+
+
+	<bean id="taskHandler" class="com.umpay.proxyservice.TaskHandler"
+		scope="singleton" init-method="init">
+		<!-- 默认的每日限制次数 -1为不限制 -->
+		<property name="defaultDayMaxLimit" value="-1" />
+		<!-- 默认的tps限制 -->
+		<property name="defaultSecondMaxLimit" value="100" />
+		<!-- 异常计数告警发送 -->
+		<property name="limitErrorCount" ref="limitErrorCount" />
+		<!-- 总量限制的配置文件的存放地址根路径 -->
+		<property name="pathName" value="D:\workspace\lianDongYouShi\Dps-countLimitAuth_20161223_xj\resource\merid_funcode\" />
+		<!-- 总量限制的配置文件的存放地址根路径 -->
+		<property name="recordSubNum" value="20" />
+		<!-- 总量限制的配置文件的存放地址根路径 -->
+		<property name="isAppend" value="false" />
+		<!-- 文件解析策略 -->
+		<property name="simpleFileAnalz" ref="simpleFileAnalz" />
+		<!-- 实时打印配置信息到文件的文件存放地址 注意：会先将当前文件夹下的原有文件放入backFilePath下带有时间戳的文件夹中，再重新生成，所以存放地址一定是一个单独的文件夹！！！！ -->
+		<property name="generFilePath" value="D:\test\generLimit\"/>
+		<!-- generFilePath下的备份文件 -->
+		<property name="backFilePath" value="D:\test\backFilePath\"/>
+		<!-- properties的配置文件名称 -->
+		<property name="propName" value="countLimit.properties"/>
+		<!-- 实时配置修改的必输项元素集合 -->
+		<property name="configAlterElemList" >
+			<list>
+				<value>funcode</value>
+				<value>merid</value>
+				<value>limitType</value>
+				<value>maxValue</value>
+				<value>clear</value>
+			</list>
+		</property>
+		<!-- 实时配置修改的配置类型修改 -->
+		<property name="configTypeMap">
+			<map>
+				 <entry key="tps" value="1"/>
+				 <entry key="day" value="5"/>
+				 <entry key="total" value="10"/>
+			</map>
+		</property>
+	</bean>
+
+	<!-- 简单文件解析策略 单例 -->
+	<bean id="simpleFileAnalz" class="com.umpay.tactics.fileAnalz.impl.SimpleFileAnalz"
+		scope="singleton" />
+
+	<!-- 异常计数告警发送 单例 -->
+	<bean id="limitErrorCount" class="com.umpay.warnMsg.count.LimitErrorCount"
+		scope="singleton">
+		<property name="maxLimit" value="1000" />
+	</bean>
+
+    <!-- 微信告警配置信息 start -->
+	<bean id="wxWarnConf" scope="singleton"
+		class="com.umf.warnMsg.bean.WXWarnConfBean">
+		<!-- 告警服务路径 -->
+		<property name="warnUrl" value=""></property>
+	</bean>
+	<bean id="wxWarnInfo" class="com.umf.warnMsg.bean.WXWarnInfoBean" scope="prototype" >
+		<property name="key" value="countLimit"/>
+		<property name="first" value="流量限制服务"/>
+		<property name="remark" value="无备注"/>
+		<property name="openIdList" >
+			<list>
+				<value></value>
+			</list>
+		</property>
+	</bean>	
+	<!-- 微信告警配置信息 end -->
+</beans>
+
